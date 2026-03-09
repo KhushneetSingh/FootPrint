@@ -120,6 +120,22 @@ def run(video_in, video_out, model_path):
 
     os.makedirs(config.HEATMAP_DIR, exist_ok=True)
 
+    # --- Filter out short-lived ghost tracks ---
+    track_history = {
+        tid: positions
+        for tid, positions in track_history.items()
+        if len(positions) >= config.MIN_TRACK_FRAMES
+    }
+    trail_history = {
+        tid: trail
+        for tid, trail in trail_history.items()
+        if tid in track_history
+    }
+    print(
+        f"  Tracks after filtering: {len(track_history)} "
+        f"(removed tracks shorter than {config.MIN_TRACK_FRAMES} frames)"
+    )
+
     speed_results = compute_speeds(track_history, fps)
 
     for tid, positions in track_history.items():

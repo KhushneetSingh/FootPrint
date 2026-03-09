@@ -11,6 +11,8 @@ IOU_THRESHOLD = 0.5
 CLASSES_TO_DETECT = [0]
 
 TRACKER_CONFIG = 'bytetrack.yaml'
+# Tracks shorter than this many frames are discarded as noise
+MIN_TRACK_FRAMES = 25
 TRAIL_MAX_LEN = 30
 
 VIDEO_INPUT = 'data/input/match.mp4'
