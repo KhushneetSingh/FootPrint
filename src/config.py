@@ -5,14 +5,14 @@ All tuneable hyperparameters, file paths, and model settings live here so that
 no other module contains hard-coded magic numbers or paths.
 """
 
-MODEL_PATH = 'yolov8n.pt'
-CONF_THRESHOLD = 0.4
+MODEL_PATH = 'yolov8m.pt'
+CONF_THRESHOLD = 0.35
 IOU_THRESHOLD = 0.5
 CLASSES_TO_DETECT = [0]
 
 TRACKER_CONFIG = 'bytetrack.yaml'
 # Tracks shorter than this many frames are discarded as noise
-MIN_TRACK_FRAMES = 25
+MIN_TRACK_FRAMES = 90
 TRAIL_MAX_LEN = 30
 
 VIDEO_INPUT = 'data/input/match.mp4'

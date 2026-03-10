@@ -42,7 +42,6 @@ data/output/*
 # YOLOv8 specific
 runs/
 *.pt
-*yolov8n.pt
 
 # IDE / OS specific
 .idea/
