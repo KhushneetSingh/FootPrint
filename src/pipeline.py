@@ -8,7 +8,6 @@ output video, and computes post-processing metrics (speed reports and heatmaps).
 
 import csv
 import os
-from collections import defaultdict, deque
 
 import cv2
 
@@ -16,6 +15,7 @@ from src import config
 from src.annotator import Annotator
 from src.detector import PlayerDetector
 from src.metrics import compute_speeds, generate_heatmap
+from src.tracker import Tracker
 
 
 def save_speed_csv(speed_results, filepath=None):
@@ -81,11 +81,7 @@ def run(video_in, video_out, model_path):
         tracker_config=config.TRACKER_CONFIG,
     )
     annotator = Annotator()
-
-    track_history = defaultdict(list)
-    trail_history = defaultdict(
-        lambda: deque(maxlen=config.TRAIL_MAX_LEN),
-    )
+    tracker = Tracker(max_trail_len=config.TRAIL_MAX_LEN)
 
     frame_count = 0
 
@@ -96,14 +92,7 @@ def run(video_in, video_out, model_path):
 
         tracked = detector.track(frame)
 
-        for det in tracked:
-            tid = det['track_id']
-            x1, y1, x2, y2 = det['bbox']
-            cx = int((x1 + x2) / 2)
-            cy = int((y1 + y2) / 2)
-
-            track_history[tid].append((cx, cy, frame_count))
-            trail_history[tid].append((cx, cy))
+        trail_history = tracker.update(tracked, frame_count)
 
         annotated = annotator.draw_frame(frame, tracked, trail_history)
         writer.write(annotated)
@@ -121,21 +110,13 @@ def run(video_in, video_out, model_path):
     os.makedirs(config.HEATMAP_DIR, exist_ok=True)
 
     # --- Filter out short-lived ghost tracks ---
-    track_history = {
-        tid: positions
-        for tid, positions in track_history.items()
-        if len(positions) >= config.MIN_TRACK_FRAMES
-    }
-    trail_history = {
-        tid: trail
-        for tid, trail in trail_history.items()
-        if tid in track_history
-    }
+    remaining = tracker.filter_short_tracks(config.MIN_TRACK_FRAMES)
     print(
-        f"  Tracks after filtering: {len(track_history)} "
+        f"  Tracks after filtering: {remaining} "
         f"(removed tracks shorter than {config.MIN_TRACK_FRAMES} frames)"
     )
 
+    track_history = tracker.get_full_history()
     speed_results = compute_speeds(track_history, fps)
 
     for tid, positions in track_history.items():
