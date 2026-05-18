@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚽ SmartPitch Analytics
+# ⚽ FootPrint Analytics
 
 **AI-Powered Football Match Video Analysis Pipeline**
 
@@ -17,14 +17,14 @@ A modular Python pipeline that ingests football match video, detects and tracks 
 
 ## ✨ Features
 
-| Feature | Description |
-|---------|-------------|
-| 🎯 **Player Detection** | Real-time detection using YOLOv8 medium model with configurable confidence thresholds |
-| 🔗 **Multi-Object Tracking** | ByteTrack-based identity association across frames with ghost track filtering |
-| 🏃 **Speed Estimation** | Per-player average speed computed from centroid displacement (pixel-space) |
-| 🗺️ **Spatial Heatmaps** | Gaussian-smoothed density maps showing each player's movement coverage |
-| 🎬 **Annotated Video** | Output video with bounding boxes, track IDs, and motion trail overlays |
-| 📊 **CSV Reports** | Structured speed data export for further analysis |
+| Feature                      | Description                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| 🎯 **Player Detection**      | Real-time detection using YOLOv8 medium model with configurable confidence thresholds |
+| 🔗 **Multi-Object Tracking** | ByteTrack-based identity association across frames with ghost track filtering         |
+| 🏃 **Speed Estimation**      | Per-player average speed computed from centroid displacement (pixel-space)            |
+| 🗺️ **Spatial Heatmaps**      | Gaussian-smoothed density maps showing each player's movement coverage                |
+| 🎬 **Annotated Video**       | Output video with bounding boxes, track IDs, and motion trail overlays                |
+| 📊 **CSV Reports**           | Structured speed data export for further analysis                                     |
 
 ---
 
@@ -135,11 +135,11 @@ The YOLOv8 model weights (`yolov8m.pt`) will be **automatically downloaded** by 
 python main.py [--input PATH] [--output PATH] [--model PATH]
 ```
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--input` | `data/input/match.mp4` | Path to the raw match video |
-| `--output` | `data/output/annotated.mp4` | Path for the annotated output video |
-| `--model` | `yolov8m.pt` | YOLOv8 model weights (auto-downloaded) |
+| Flag       | Default                     | Description                            |
+| ---------- | --------------------------- | -------------------------------------- |
+| `--input`  | `data/input/match.mp4`      | Path to the raw match video            |
+| `--output` | `data/output/annotated.mp4` | Path for the annotated output video    |
+| `--model`  | `yolov8m.pt`                | YOLOv8 model weights (auto-downloaded) |
 
 ### Example
 
@@ -157,11 +157,11 @@ python main.py --model yolov8n.pt
 
 All outputs are saved to `data/output/` by default:
 
-| Output | File | Description |
-|--------|------|-------------|
-| 🎬 Annotated Video | `annotated.mp4` | Video with bounding boxes, track IDs, and motion trails |
-| 📊 Speed Report | `speed_report.csv` | Per-player average speed (px/s) and frames tracked |
-| 🗺️ Heatmaps | `heatmaps/player_<ID>_heatmap.png` | Gaussian-smoothed spatial density map per player |
+| Output             | File                               | Description                                             |
+| ------------------ | ---------------------------------- | ------------------------------------------------------- |
+| 🎬 Annotated Video | `annotated.mp4`                    | Video with bounding boxes, track IDs, and motion trails |
+| 📊 Speed Report    | `speed_report.csv`                 | Per-player average speed (px/s) and frames tracked      |
+| 🗺️ Heatmaps        | `heatmaps/player_<ID>_heatmap.png` | Gaussian-smoothed spatial density map per player        |
 
 ---
 
@@ -169,26 +169,29 @@ All outputs are saved to `data/output/` by default:
 
 All tuneable parameters are centralized in [`src/config.py`](src/config.py):
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `CONF_THRESHOLD` | `0.35` | Minimum detection confidence |
-| `IOU_THRESHOLD` | `0.5` | IoU threshold for NMS |
-| `MIN_TRACK_FRAMES` | `90` | Minimum frames to keep a track (ghost filter) |
-| `TRAIL_MAX_LEN` | `30` | Visual trail length (frames) |
-| `HEATMAP_SIGMA` | `20` | Gaussian smoothing sigma for heatmaps |
-| `LOG_INTERVAL` | `30` | Print progress every N frames |
+| Parameter          | Default | Description                                   |
+| ------------------ | ------- | --------------------------------------------- |
+| `CONF_THRESHOLD`   | `0.35`  | Minimum detection confidence                  |
+| `IOU_THRESHOLD`    | `0.5`   | IoU threshold for NMS                         |
+| `MIN_TRACK_FRAMES` | `90`    | Minimum frames to keep a track (ghost filter) |
+| `TRAIL_MAX_LEN`    | `30`    | Visual trail length (frames)                  |
+| `HEATMAP_SIGMA`    | `20`    | Gaussian smoothing sigma for heatmaps         |
+| `LOG_INTERVAL`     | `30`    | Print progress every N frames                 |
 
 ---
 
 ## 🧠 Design Decisions
 
 ### Why YOLOv8?
+
 YOLOv8 (Ultralytics) provides state-of-the-art real-time object detection with a clean Python API. The `yolov8m.pt` medium variant balances speed and accuracy, running at interactive frame rates even on CPU.
 
 ### Why ByteTrack?
+
 ByteTrack is bundled inside Ultralytics with zero additional setup. Its dual-threshold association strategy matches high- and low-confidence detections separately, providing stable track IDs even through brief occlusions.
 
 ### Separation of Concerns
+
 - **Detection** (`detector.py`) — _"Who is in this frame?"_ (no temporal memory)
 - **Tracking** (`tracker.py`) — _"Which detection corresponds to which across frames?"_ (maintains identity)
 - **Annotation** (`annotator.py`) — Pure visual rendering, no logic
@@ -219,15 +222,15 @@ avg_speed (px/s) = (total_pixel_displacement / num_frames) × fps
 
 ## 🚧 Limitations & Future Improvements
 
-| Area | Current Limitation | Planned Improvement |
-|------|-------------------|---------------------|
-| Speed Accuracy | Pixel-space only | Homography transform using corner flag reference points |
-| Team Awareness | All players treated equally | K-Means colour clustering on HSV jersey crops |
-| Ball Tracking | Not tracked | Custom-trained YOLO head for football detection |
-| Occlusion Handling | IDs may swap during long occlusions | ReID with appearance embeddings (OSNet + DeepSORT) |
-| Detection Quality | Generic COCO model | Fine-tuned on SoccerNet or football-specific datasets |
-| Tactical Analysis | Not implemented | Team centroids, formations, off-ball spacing metrics |
-| User Interface | CLI only | Streamlit dashboard with interactive player and heatmap overlay |
+| Area               | Current Limitation                  | Planned Improvement                                             |
+| ------------------ | ----------------------------------- | --------------------------------------------------------------- |
+| Speed Accuracy     | Pixel-space only                    | Homography transform using corner flag reference points         |
+| Team Awareness     | All players treated equally         | K-Means colour clustering on HSV jersey crops                   |
+| Ball Tracking      | Not tracked                         | Custom-trained YOLO head for football detection                 |
+| Occlusion Handling | IDs may swap during long occlusions | ReID with appearance embeddings (OSNet + DeepSORT)              |
+| Detection Quality  | Generic COCO model                  | Fine-tuned on SoccerNet or football-specific datasets           |
+| Tactical Analysis  | Not implemented                     | Team centroids, formations, off-ball spacing metrics            |
+| User Interface     | CLI only                            | Streamlit dashboard with interactive player and heatmap overlay |
 
 ---
 
